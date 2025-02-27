@@ -2,11 +2,8 @@ name: Build and Release APKs
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+    tags:
+      - v*.*.*
 
 jobs:
   release:
