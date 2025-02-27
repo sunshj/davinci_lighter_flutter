@@ -20,10 +20,10 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v3
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: "11.x"
+          java-version: "17.x"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
