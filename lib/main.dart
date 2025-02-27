@@ -34,6 +34,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  var showValue = false;
+
+  toggleShowValue([bool? value]) {
+    showValue = value ?? !showValue;
+    notifyListeners();
+  }
+
   var torchMode = TorchMode.light;
 
   setTorchMode(TorchMode value) {
@@ -42,7 +49,7 @@ class AppState extends ChangeNotifier {
   }
 
   get torchModeText {
-    return torchMode == TorchMode.light ? 'Light' : 'Sound';
+    return torchMode == TorchMode.light ? '光敏' : '声控';
   }
 
   var lightThreshold = 2000;

@@ -1,30 +1,13 @@
 import 'dart:async';
-
 import 'package:davinci_lighter/main.dart';
+import 'package:davinci_lighter/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:ambient_light/ambient_light.dart';
 import 'package:torch_light/torch_light.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:noise_meter/noise_meter.dart';
-
-_requestRecordPermission() async {
-  final status = await Permission.microphone.status;
-  if (status.isGranted) {
-    print('麦克风权限已授予');
-  } else {
-    final result = await Permission.microphone.request();
-    if (result.isGranted) {
-      print('麦克风权限请求成功');
-    } else if (result.isDenied) {
-      print('麦克风权限被拒绝');
-    } else if (result.isPermanentlyDenied) {
-      print('麦克风权限被永久拒绝，请到设置中开启');
-      openAppSettings();
-    }
-  }
-}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,7 +22,6 @@ class _HomePageState extends State<HomePage> {
 
   _toggleTorch(bool turnOn) {
     if (turnOn) {
-      TorchLight.isTorchAvailable();
       TorchLight.enableTorch();
     } else {
       TorchLight.disableTorch();
@@ -70,8 +52,7 @@ class _HomePageState extends State<HomePage> {
   int _soundLevel = 0;
   StreamSubscription? _soundSensorStreamSub;
 
-  _listenSoundLevel() async {
-    await _requestRecordPermission();
+  _listenSoundLevel() {
     final appState = context.read<AppState>();
     appState.toggleEnable();
 
@@ -87,6 +68,40 @@ class _HomePageState extends State<HomePage> {
       _soundSensorStreamSub = null;
       _toggleTorch(false);
     }
+  }
+
+  _togglePower(TorchMode mode) async {
+    if (mode == TorchMode.light) {
+      _listenLightSensor();
+    } else {
+      final isGranted = await requestRecordPermission(
+        onDenied: () {
+          showMessageDialog(
+            context,
+            title: '请求权限',
+            content: '请允许录音权限',
+            onConfirm: () {
+              requestRecordPermission();
+            },
+          );
+        },
+        onPermanentlyDenied: () {
+          showMessageDialog(
+            context,
+            title: '请求权限',
+            content: '请前往系统设置中开启录音权限',
+            onConfirm: () {
+              openAppSettings();
+            },
+          );
+        },
+      );
+
+      if (!isGranted) return;
+      _listenSoundLevel();
+    }
+
+    HapticFeedback.vibrate();
   }
 
   @override
@@ -105,7 +120,7 @@ class _HomePageState extends State<HomePage> {
     final appState = context.watch<AppState>();
 
     return Scaffold(
-      appBar: AppBar(title: Text('🔦Davinci Lighter')),
+      appBar: AppBar(title: Text('Davinci Lighter')),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -116,23 +131,16 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      if (appState.torchMode == TorchMode.light) {
-                        _listenLightSensor();
-                      } else {
-                        _listenSoundLevel();
-                      }
-                      HapticFeedback.vibrate();
-                    },
+                    onTap: () => _togglePower(appState.torchMode),
                     child: Container(
                       width: 140,
                       height: 140,
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color:
+                            Theme.of(context).colorScheme.surfaceContainerHigh,
                         shape: BoxShape.circle,
                       ),
-
                       child: Center(
                         child: Icon(
                           Icons.power_settings_new_rounded,
@@ -149,11 +157,22 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          Text("当前模式：${appState.torchModeText} 当前触发阈值：${appState.threshold}"),
-          if (appState.enable && appState.torchMode == TorchMode.light)
-            Text('当前亮度：$_lux'),
-          if (appState.enable && appState.torchMode == TorchMode.sound)
-            Text('当前分贝：$_soundLevel'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 5,
+            children: [
+              Text("当前模式：${appState.torchModeText}"),
+              Text("触发阈值：${appState.threshold}"),
+              if (appState.showValue &&
+                  appState.enable &&
+                  appState.torchMode == TorchMode.light)
+                Text('当前亮度：$_lux'),
+              if (appState.showValue &&
+                  appState.enable &&
+                  appState.torchMode == TorchMode.sound)
+                Text('当前分贝：$_soundLevel'),
+            ],
+          ),
           SizedBox(height: 10),
         ],
       ),

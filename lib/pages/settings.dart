@@ -28,18 +28,22 @@ class _SettingsPageState extends State<SettingsPage> {
             trailing: SizedBox(
               width: 100,
               child: DropdownButton(
-                items: [
-                  DropdownMenuItem(
-                    value: TorchMode.light,
-                    enabled: !appState.enable,
-                    child: Text("光敏"),
-                  ),
-                  DropdownMenuItem(
-                    value: TorchMode.sound,
-                    enabled: !appState.enable,
-                    child: Text("声控"),
-                  ),
-                ],
+                hint: Text(appState.torchModeText),
+                items:
+                    !appState.enable
+                        ? [
+                          DropdownMenuItem(
+                            value: TorchMode.light,
+                            enabled: !appState.enable,
+                            child: Text("光敏"),
+                          ),
+                          DropdownMenuItem(
+                            value: TorchMode.sound,
+                            enabled: !appState.enable,
+                            child: Text("声控"),
+                          ),
+                        ]
+                        : null,
                 value: appState.torchMode,
                 onChanged: (value) {
                   appState.setTorchMode(value ?? TorchMode.light);
@@ -57,10 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
               width: 100,
               child: TextField(
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: "阈值",
-                  enabled: !appState.enable,
-                ),
+                decoration: InputDecoration(enabled: !appState.enable),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 controller: _thresholdController,
                 onChanged: (value) {
@@ -70,6 +71,16 @@ class _SettingsPageState extends State<SettingsPage> {
                   }
                 },
               ),
+            ),
+          ),
+
+          ListTile(
+            title: Text("显示当前数值"),
+            trailing: Switch(
+              value: appState.showValue,
+              onChanged: (value) {
+                appState.toggleShowValue(value);
+              },
             ),
           ),
         ],
