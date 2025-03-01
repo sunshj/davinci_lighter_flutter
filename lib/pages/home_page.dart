@@ -73,14 +73,19 @@ class _HomePageState extends State<HomePage> {
     if (mode == TorchMode.light) {
       _listenLightSensor();
     } else {
-      final isGranted = await requestRecordPermission(
+      await requestPermission(
+        Permission.microphone,
+        onGranted: _listenSoundLevel,
         onDenied: () {
           showMessageDialog(
             context,
             title: '请求权限',
             content: '请允许录音权限',
-            onConfirm: () {
-              requestRecordPermission();
+            onConfirm: () async {
+              await requestPermission(
+                Permission.microphone,
+                onGranted: _listenSoundLevel,
+              );
             },
           );
         },
@@ -95,9 +100,6 @@ class _HomePageState extends State<HomePage> {
           );
         },
       );
-
-      if (!isGranted) return;
-      _listenSoundLevel();
     }
 
     HapticFeedback.vibrate();
@@ -119,7 +121,23 @@ class _HomePageState extends State<HomePage> {
     final appState = context.watch<AppState>();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Davinci Lighter')),
+      appBar: AppBar(
+        title: Text('Davinci Lighter'),
+        actionsPadding: EdgeInsets.only(right: 10),
+        actions: [
+          IconButton(
+            onPressed: () {
+              showMessageDialog(
+                context,
+                title: '使用说明',
+                content: '光敏模式：当外界亮度大于触发阈值时，打开手电筒。\n\n声控模式：当外界音量大于触发阈值时，打开手电筒。',
+                showCancelButton: false,
+              );
+            },
+            icon: Icon(Icons.info),
+          ),
+        ],
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -161,15 +179,14 @@ class _HomePageState extends State<HomePage> {
             spacing: 5,
             children: [
               Text("当前模式：${appState.torchModeText}"),
-              Text("触发阈值：${appState.threshold}"),
-              if (appState.showValue &&
-                  appState.enable &&
-                  appState.torchMode == TorchMode.light)
-                Text('当前亮度：$_lux'),
-              if (appState.showValue &&
-                  appState.enable &&
-                  appState.torchMode == TorchMode.sound)
-                Text('当前分贝：$_soundLevel'),
+
+              if (appState.showInfo) Text("触发阈值：${appState.threshold}"),
+
+              if (appState.showInfo && appState.enable)
+                if (appState.lightTorchMode)
+                  Text('当前亮度：$_lux')
+                else
+                  Text('当前分贝：$_soundLevel'),
             ],
           ),
           SizedBox(height: 10),

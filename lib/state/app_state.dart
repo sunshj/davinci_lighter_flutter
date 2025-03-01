@@ -20,10 +20,10 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  var showValue = false;
+  var showInfo = false;
 
-  toggleShowValue([bool? value]) {
-    showValue = value ?? !showValue;
+  toggleInfoShown([bool? value]) {
+    showInfo = value ?? !showInfo;
     _saveSettings();
     notifyListeners();
   }
@@ -35,6 +35,9 @@ class AppState extends ChangeNotifier {
     _saveSettings();
     notifyListeners();
   }
+
+  get lightTorchMode => torchMode == TorchMode.light;
+  get soundTorchMode => torchMode == TorchMode.sound;
 
   get torchModeText {
     return torchMode == TorchMode.light ? '光敏' : '声控';
@@ -61,7 +64,7 @@ class AppState extends ChangeNotifier {
   void _saveSettings() {
     if (_prefs == null) return;
 
-    _prefs!.setBool('showValue', showValue);
+    _prefs!.setBool('showValue', showInfo);
     _prefs!.setInt('torchMode', torchMode.index);
     _prefs!.setInt('lightThreshold', lightThreshold);
     _prefs!.setInt('soundThreshold', soundThreshold);
@@ -71,7 +74,7 @@ class AppState extends ChangeNotifier {
   void _loadSettings() {
     if (_prefs == null) return;
 
-    showValue = _prefs!.getBool('showValue') ?? false;
+    showInfo = _prefs!.getBool('showValue') ?? false;
     torchMode = TorchMode.values[_prefs!.getInt('torchMode') ?? 0];
     lightThreshold = _prefs!.getInt('lightThreshold') ?? 2000;
     soundThreshold = _prefs!.getInt('soundThreshold') ?? 80;

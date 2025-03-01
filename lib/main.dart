@@ -1,5 +1,5 @@
-import 'package:davinci_lighter/pages/home.dart';
-import 'package:davinci_lighter/pages/settings.dart';
+import 'package:davinci_lighter/pages/home_page.dart';
+import 'package:davinci_lighter/pages/settings_page.dart';
 import 'package:davinci_lighter/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
