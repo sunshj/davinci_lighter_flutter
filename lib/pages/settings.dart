@@ -1,4 +1,4 @@
-import 'package:davinci_lighter/main.dart';
+import 'package:davinci_lighter/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';

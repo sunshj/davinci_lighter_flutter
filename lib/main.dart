@@ -1,19 +1,29 @@
 import 'package:davinci_lighter/pages/home.dart';
 import 'package:davinci_lighter/pages/settings.dart';
+import 'package:davinci_lighter/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main(List<String> args) {
-  runApp(MyApp());
+void main(List<String> args) async {
+  // 确保 Flutter 绑定初始化
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 创建 AppState 并初始化
+  final appState = AppState();
+  await appState.init();
+
+  runApp(MyApp(appState: appState));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AppState appState;
+
+  const MyApp({super.key, required this.appState});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AppState(),
+    return ChangeNotifierProvider.value(
+      value: appState,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Davinci Lighter',
@@ -24,58 +34,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
-enum TorchMode { light, sound }
-
-class AppState extends ChangeNotifier {
-  var enable = false;
-
-  toggleEnable([bool? value]) {
-    enable = value ?? !enable;
-    notifyListeners();
-  }
-
-  var showValue = false;
-
-  toggleShowValue([bool? value]) {
-    showValue = value ?? !showValue;
-    notifyListeners();
-  }
-
-  var torchMode = TorchMode.light;
-
-  setTorchMode(TorchMode value) {
-    torchMode = value;
-    notifyListeners();
-  }
-
-  get torchModeText {
-    return torchMode == TorchMode.light ? '光敏' : '声控';
-  }
-
-  var lightThreshold = 2000;
-  var soundThreshold = 80;
-
-  get threshold {
-    return torchMode == TorchMode.light ? lightThreshold : soundThreshold;
-  }
-
-  setThreshold(TorchMode mode, int value) {
-    if (mode == TorchMode.light) {
-      lightThreshold = value;
-    } else {
-      soundThreshold = value;
-    }
-    notifyListeners();
-  }
-}
-
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() {
-    return _MainScreenState();
-  }
+  State<StatefulWidget> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
@@ -88,6 +51,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: NavigationBar(
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         destinations: [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),

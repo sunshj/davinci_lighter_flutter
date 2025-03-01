@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:davinci_lighter/main.dart';
+import 'package:davinci_lighter/state/app_state.dart';
 import 'package:davinci_lighter/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +19,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   double _lux = 0.0;
   StreamSubscription? _lightSensorStreamSub;
+  int _soundLevel = 0;
+  StreamSubscription? _soundSensorStreamSub;
 
   _toggleTorch(bool turnOn) {
     if (turnOn) {
@@ -48,9 +50,6 @@ class _HomePageState extends State<HomePage> {
       _toggleTorch(false);
     }
   }
-
-  int _soundLevel = 0;
-  StreamSubscription? _soundSensorStreamSub;
 
   _listenSoundLevel() {
     final appState = context.read<AppState>();
