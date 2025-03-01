@@ -1,16 +1,12 @@
-# davinci_lighter
+# Davinci Lighter
 
-A new Flutter project.
+> 有光照的时候会亮，没光的时候绝对不会亮，白天有阳光，那晚上怎么办呢？拿另一个手电筒一照它就亮了。
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## Release
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+git commit -m "chore: release v1.0.0"
+git tag v1.0.0
+git push origin v1.0.0
+```
