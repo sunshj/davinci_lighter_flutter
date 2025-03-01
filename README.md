@@ -7,6 +7,7 @@
 
 ```bash
 git commit -m "chore: release v1.0.0"
+git push
 git tag v1.0.0
 git push origin v1.0.0
 ```
