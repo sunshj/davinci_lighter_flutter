@@ -13,10 +13,10 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   int _lux = 0;
   StreamSubscription? _lightSensorStreamSub;
   int _soundLevel = 0;
@@ -103,6 +103,13 @@ class _HomePageState extends State<HomePage> {
     }
 
     HapticFeedback.vibrate();
+  }
+
+  turnOn() {
+    final appState = context.read<AppState>();
+    if (!appState.enable) {
+      _togglePower(appState.torchMode);
+    }
   }
 
   @override

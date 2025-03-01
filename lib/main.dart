@@ -3,6 +3,7 @@ import 'package:davinci_lighter/pages/settings_page.dart';
 import 'package:davinci_lighter/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quick_actions/quick_actions.dart';
 
 void main(List<String> args) async {
   // 确保 Flutter 绑定初始化
@@ -44,7 +45,42 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [const HomePage(), const SettingsPage()];
+  // 添加GlobalKey来引用HomePage的状态
+  final homePageKey = GlobalKey<HomePageState>();
+
+  final List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pages.addAll([HomePage(key: homePageKey), SettingsPage()]);
+
+    setupQuickActions();
+  }
+
+  setupQuickActions() {
+    final quickActions = QuickActions();
+
+    quickActions.initialize((String shortcutType) {
+      if (shortcutType == 'turn_on_power') {
+        setState(() {
+          _selectedIndex = 0;
+        });
+        if (mounted) {
+          homePageKey.currentState?.turnOn();
+        }
+      }
+    });
+
+    quickActions.setShortcutItems([
+      const ShortcutItem(
+        type: 'turn_on_power',
+        localizedTitle: '启动',
+        icon: 'ic_launcher',
+      ),
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {

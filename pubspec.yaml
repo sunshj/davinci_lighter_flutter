@@ -40,6 +40,7 @@ dependencies:
   noise_meter: ^5.0.2
   shared_preferences: ^2.2.2
   url_launcher: ^6.3.1
+  quick_actions: ^1.1.0
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
