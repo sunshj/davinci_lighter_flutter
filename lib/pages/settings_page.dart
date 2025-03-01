@@ -68,9 +68,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     width: 100,
                     child: TextField(
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(enabled: !appState.enable),
+                      decoration: InputDecoration(
+                        enabled: !appState.enable,
+                        suffixText: appState.lightTorchMode ? 'lux' : 'dB',
+                      ),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       controller: _thresholdController,
+
                       onChanged: (value) {
                         final parsed = int.tryParse(value);
                         if (parsed != null) {

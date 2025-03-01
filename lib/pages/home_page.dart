@@ -17,7 +17,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  double _lux = 0.0;
+  int _lux = 0;
   StreamSubscription? _lightSensorStreamSub;
   int _soundLevel = 0;
   StreamSubscription? _soundSensorStreamSub;
@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
         luxValue,
       ) {
         setState(() {
-          _lux = luxValue;
+          _lux = luxValue.toInt();
         });
 
         _toggleTorch(luxValue > appState.lightThreshold);
@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Text("当前模式：${appState.torchModeText}"),
 
-              if (appState.showInfo) Text("触发阈值：${appState.threshold}"),
+              if (appState.showInfo) Text("触发阈值：${appState.thresholdWithUnit}"),
 
               if (appState.showInfo && appState.enable)
                 if (appState.lightTorchMode)

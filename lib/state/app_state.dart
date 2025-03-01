@@ -50,6 +50,12 @@ class AppState extends ChangeNotifier {
     return torchMode == TorchMode.light ? lightThreshold : soundThreshold;
   }
 
+  get thresholdWithUnit {
+    return torchMode == TorchMode.light
+        ? '$lightThreshold lux'
+        : '$soundThreshold dB';
+  }
+
   setThreshold(TorchMode mode, int value) {
     if (mode == TorchMode.light) {
       lightThreshold = value;
