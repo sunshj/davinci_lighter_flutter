@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:davinci_lighter/state/app_state.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:location/location.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +19,7 @@ class _SpeedPageState extends State<SpeedPage> {
   bool _isPaused = false;
   DateTime? _startTime;
   String? _elapsedTime;
-  StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<LocationData>? _positionSubscription;
   List<_PositionSample> _positions = [];
   List<double> _speeds = [];
   List<_MinuteSpeed> _minuteSpeeds = [];
@@ -74,28 +74,32 @@ class _SpeedPageState extends State<SpeedPage> {
   }
 
   void _start() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    Location location = Location();
+    bool serviceEnabled = await location.serviceEnabled();
     if (!serviceEnabled) {
-      await Geolocator.openLocationSettings();
-      return;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
         return;
       }
     }
-    if (permission == LocationPermission.deniedForever) return;
+
+    PermissionStatus permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+    if (permissionGranted == PermissionStatus.deniedForever) return;
+    location.enableBackgroundMode(enable: true);
 
     _resetState(isRunning: true);
 
-    _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        timeLimit: Duration(seconds: 10),
-      ),
-    ).listen(_onPositionUpdate);
+    _positionSubscription = location.onLocationChanged
+        .timeout(Duration(seconds: 10))
+        .listen((locationData) {
+          _onPositionUpdate(locationData);
+        });
 
     _positionSubscription?.onError((error) {
       _showSnackbar('位置信息获取失败: $error', duration: 5);
@@ -145,11 +149,15 @@ class _SpeedPageState extends State<SpeedPage> {
     _resetState(isRunning: false);
   }
 
-  void _onPositionUpdate(Position position) {
+  void _onPositionUpdate(LocationData position) {
     if (!_isRunning || _isPaused) return;
 
     final now = DateTime.now();
-    final sample = _PositionSample(now, position.latitude, position.longitude);
+    final sample = _PositionSample(
+      now,
+      position.latitude!,
+      position.longitude!,
+    );
     setState(() {
       _positions.add(sample);
       if (_positions.length > 1) {
