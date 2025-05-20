@@ -1,5 +1,6 @@
 import 'package:davinci_lighter/pages/home_page.dart';
 import 'package:davinci_lighter/pages/settings_page.dart';
+import 'package:davinci_lighter/pages/speed_page.dart';
 import 'package:davinci_lighter/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +55,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
 
-    _pages.addAll([HomePage(key: homePageKey), SettingsPage()]);
+    _pages.addAll([HomePage(key: homePageKey), SpeedPage(), SettingsPage()]);
 
     setupQuickActions();
   }
@@ -90,6 +91,7 @@ class _MainScreenState extends State<MainScreen> {
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         destinations: [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(icon: Icon(Icons.speed), label: 'Speed'),
           NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         selectedIndex: _selectedIndex,

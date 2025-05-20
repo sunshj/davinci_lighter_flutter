@@ -101,8 +101,22 @@ class HomePageState extends State<HomePage> {
         },
       );
     }
-
+    _showTogglePowerSnackbar();
     HapticFeedback.vibrate();
+  }
+
+  _showTogglePowerSnackbar() {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    final appState = context.read<AppState>();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "已${appState.enable ? "开启" : "关闭"}${appState.torchModeText}手电筒",
+        ),
+        duration: Duration(seconds: 1),
+        backgroundColor: Color(0xFF000000),
+      ),
+    );
   }
 
   turnOn() {

@@ -27,6 +27,13 @@ class _SettingsPageState extends State<SettingsPage> {
           Expanded(
             child: ListView(
               children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
+                  child: Text(
+                    'Lighter Settings',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                ),
                 ListTile(
                   title: Text("触发模式"),
                   leading: Icon(Icons.power_settings_new_sharp),
@@ -94,6 +101,48 @@ class _SettingsPageState extends State<SettingsPage> {
                       appState.toggleInfoShown(value);
                     },
                   ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
+                  child: Text(
+                    'Speed Settings',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                ListTile(
+                  title: Text("清空历史记录"),
+                  subtitle: Text("清空所有测速记录"),
+                  leading: Icon(Icons.delete_forever),
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder:
+                          (context) => AlertDialog(
+                            title: Text("确认清空"),
+                            content: Text("确定要清空所有测速记录吗？此操作不可恢复。"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text("取消"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  appState.clearSpeedRecords();
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("测速记录已清空"),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                },
+                                child: Text("确定"),
+                              ),
+                            ],
+                          ),
+                    );
+                  },
                 ),
               ],
             ),

@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   ambient_light
+  geolocator_windows
   permission_handler_windows
   url_launcher_windows
 )

@@ -1,8 +1,8 @@
 name: davinci_lighter
-description: 'A new Flutter project.'
+description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -41,6 +41,8 @@ dependencies:
   shared_preferences: ^2.2.2
   url_launcher: ^6.3.1
   quick_actions: ^1.1.0
+  geolocator: ^14.0.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -49,7 +51,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
- 
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

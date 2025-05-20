@@ -85,4 +85,21 @@ class AppState extends ChangeNotifier {
     lightThreshold = _prefs!.getInt('lightThreshold') ?? 2000;
     soundThreshold = _prefs!.getInt('soundThreshold') ?? 80;
   }
+
+  void saveSpeedRecords(List<String> recordsJson) {
+    if (_prefs == null) return;
+
+    _prefs!.setStringList('speed_records', recordsJson);
+  }
+
+  List<String> getSpeedRecords() {
+    if (_prefs == null) return [];
+    return _prefs!.getStringList('speed_records') ?? [];
+  }
+
+  void clearSpeedRecords() {
+    if (_prefs == null) return;
+    _prefs!.remove('speed_records');
+    notifyListeners();
+  }
 }
