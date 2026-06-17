@@ -74,42 +74,77 @@ class _SpeedPageState extends State<SpeedPage> {
   }
 
   void _start() async {
-    Location location = Location();
-    bool serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        return;
-      }
-    }
+    final location = Location();
+    final serviceEnabled = await _ensureLocationService(location);
+    if (!mounted || !serviceEnabled) return;
 
-    PermissionStatus permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-    if (permissionGranted == PermissionStatus.deniedForever) return;
-    try {
-      await location.enableBackgroundMode(enable: true);
-    } catch (_) {}
+    final permissionGranted = await _ensureLocationPermission(location);
+    if (!mounted || !permissionGranted) return;
 
+    await location.changeSettings(
+      accuracy: LocationAccuracy.high,
+      interval: 1000,
+      distanceFilter: 1,
+    );
+    if (!mounted) return;
+
+    await _positionSubscription?.cancel();
     _resetState(isRunning: true);
 
-    _positionSubscription = location.onLocationChanged.listen((locationData) {
-      _onPositionUpdate(locationData);
-    });
-
-    _positionSubscription?.onError((error) {
-      _showSnackbar('位置信息获取失败: $error', duration: 5);
-    });
-
-    _positionSubscription?.onDone(() {
-      _stop();
-    });
+    _positionSubscription = location.onLocationChanged.listen(
+      _onPositionUpdate,
+      onError: _handleLocationError,
+      onDone: () {
+        if (_isRunning) {
+          _stop();
+        }
+      },
+    );
 
     _showSnackbar('测速已开始，请不要关闭位置信息', duration: 2);
+  }
+
+  Future<bool> _ensureLocationService(Location location) async {
+    var serviceEnabled = await location.serviceEnabled();
+    if (serviceEnabled) return true;
+
+    serviceEnabled = await location.requestService();
+    if (!mounted) return false;
+    if (!serviceEnabled) {
+      _showSnackbar('定位服务未开启，无法开始测速', duration: 3);
+    }
+    return serviceEnabled;
+  }
+
+  Future<bool> _ensureLocationPermission(Location location) async {
+    var permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+    }
+    if (!mounted) return false;
+
+    if (_canUseLocation(permissionGranted)) return true;
+
+    if (permissionGranted == PermissionStatus.deniedForever) {
+      _showSnackbar('定位权限已被永久拒绝，请在系统设置中开启', duration: 4);
+    } else {
+      _showSnackbar('未获得定位权限，无法开始测速', duration: 3);
+    }
+    return false;
+  }
+
+  bool _canUseLocation(PermissionStatus status) {
+    return status == PermissionStatus.granted ||
+        status == PermissionStatus.grantedLimited;
+  }
+
+  void _handleLocationError(Object error) {
+    _positionSubscription?.cancel();
+    _positionSubscription = null;
+    if (!mounted) return;
+
+    _resetState(isRunning: false);
+    _showSnackbar('位置信息获取失败: $error', duration: 5);
   }
 
   _showSnackbar(String content, {int duration = 1}) {
@@ -136,14 +171,16 @@ class _SpeedPageState extends State<SpeedPage> {
     }
   }
 
-  void _stop() {
-    _positionSubscription?.cancel();
+  Future<void> _stop() async {
+    await _positionSubscription?.cancel();
+    _positionSubscription = null;
+    if (!mounted) return;
 
     if (_positions.length < 2) {
       _showSnackbar('测速已结束，未记录到数据');
     } else {
       _showSnackbar('测速已完成 ，已保存本次记录');
-      _generateStats();
+      await _generateStats();
     }
 
     _resetState(isRunning: false);
@@ -178,7 +215,7 @@ class _SpeedPageState extends State<SpeedPage> {
     });
   }
 
-  void _generateStats() async {
+  Future<void> _generateStats() async {
     final totalTime = _positions.last.time.difference(_startTime!).inSeconds;
     final totalDist = _calcTotalDistance();
     final avgSpeed = totalTime > 0 ? totalDist / totalTime * 3.6 : 0.0;
@@ -198,6 +235,7 @@ class _SpeedPageState extends State<SpeedPage> {
       _records.insert(0, record);
     });
     await _saveRecords();
+    if (!mounted) return;
     // 每分钟平均速度
     _minuteSpeeds = [];
     if (_positions.length > 1) {
