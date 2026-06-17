@@ -91,15 +91,15 @@ class _SpeedPageState extends State<SpeedPage> {
       }
     }
     if (permissionGranted == PermissionStatus.deniedForever) return;
-    location.enableBackgroundMode(enable: true);
+    try {
+      await location.enableBackgroundMode(enable: true);
+    } catch (_) {}
 
     _resetState(isRunning: true);
 
-    _positionSubscription = location.onLocationChanged
-        .timeout(Duration(seconds: 10))
-        .listen((locationData) {
-          _onPositionUpdate(locationData);
-        });
+    _positionSubscription = location.onLocationChanged.listen((locationData) {
+      _onPositionUpdate(locationData);
+    });
 
     _positionSubscription?.onError((error) {
       _showSnackbar('位置信息获取失败: $error', duration: 5);
@@ -151,6 +151,7 @@ class _SpeedPageState extends State<SpeedPage> {
 
   void _onPositionUpdate(LocationData position) {
     if (!_isRunning || _isPaused) return;
+    if (position.latitude == null || position.longitude == null) return;
 
     final now = DateTime.now();
     final sample = _PositionSample(
